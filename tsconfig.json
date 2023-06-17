@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "module": "ES2015",
+        "moduleResolution": "nodenext"
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
