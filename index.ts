@@ -4,32 +4,63 @@ import { faker } from "@faker-js/faker"
 
 const port = 3000
 const app = express()
-let registeredUsers: Array<object> = []
+
+interface User {
+    name?: string
+    username: string
+    password: string
+}
 
 class Server {
     private readonly pathToDB = "./usersdb.json"
-    private registeredUsers: Array<object> = new Array(0)
-    private static instance: Server
-    private isReady = false
+    private _registeredUsers: Array<User> = new Array(0)
+    private static _instance: Server
+    private _isReady = false
+    private _loggedUsers: Array<string> = new Array(0)
 
     constructor() {
         this.startDB().then(value => {
             console.log(value)
-            this.isReady = true
+            this._isReady = true
         })
     }
 
-    public getRegisteredUsers(): Array<object> { return this.registeredUsers }
-
-    public static getInstance(): Server {
-        if (Server.instance === null || Server.instance === undefined) Server.instance = new Server()
-        return Server.instance
+    public login(userInput: User) {
+        if (this.authenticate(userInput)) this.addLoggedUser(userInput.username)
     }
 
-    public getIsReady(): boolean { return this.isReady }
+    public logout(userInput: User){
+        if (this.authenticate(userInput)) this.removeLoggedUser(userInput.username)
+    }
 
-    public addRegisteredUsers(users: Array<object>) {
-        registeredUsers.push(users)
+    public authenticate(input: User): boolean {
+        let isValid = false
+        for (let user of this._registeredUsers) {
+            if (user.username == input.username && user.password && input.password) {
+                isValid = true
+                break
+            }
+        }
+
+        return isValid
+    }
+
+    public isUserLogged(username: string): boolean {
+        return this._loggedUsers.includes(username)
+    }
+
+    public addLoggedUser(username: string) {
+        this.loggedUsers.push(username)
+    }
+
+    public removeLoggedUser(username: string) {
+        for (let loggedName of this._loggedUsers) {
+            if (loggedName === username) {
+                const index = this._loggedUsers.indexOf(username)
+                this._loggedUsers = this._loggedUsers.splice(index, 1)
+                break
+            }
+        }
     }
 
     private async startDB() {
@@ -47,17 +78,34 @@ class Server {
     private async importRegisteredUsersFromDB() {
         try {
             await fs.readFile(this.pathToDB, "utf-8").then(value => {
-                this.registeredUsers = JSON.parse(value)
+                this._registeredUsers = JSON.parse(value)
             })
         } catch (error) {
             console.error(error)
         }
     }
+
+    public get loggedUsers() { return this._loggedUsers }
+
+    public get registeredUsers(): Array<object> { return this._registeredUsers }
+
+    public static get instance(): Server {
+        if (Server._instance === null || Server._instance === undefined) {
+            Server._instance = new Server();
+        }
+        return Server._instance;
+    }
+
+    private static set instance(server: Server) {
+        Server._instance = server
+    }
+
+    public get isReady(): boolean { return this._isReady }
 }
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
-    const server = Server.getInstance()
+    const server = Server.instance
 })
 
 async function createUsersDB(quant: number) {
