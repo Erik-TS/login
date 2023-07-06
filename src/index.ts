@@ -12,7 +12,7 @@ interface User {
 }
 
 class Server {
-    private readonly pathToDB = "./usersdb.json"
+    private readonly pathToDB = "./src/usersdb.json"
     private _registeredUsers: Array<User> = new Array(0)
     private static _instance: Server
     private _isReady = false
@@ -29,7 +29,7 @@ class Server {
         if (this.authenticate(userInput)) this.addLoggedUser(userInput.username)
     }
 
-    public logout(userInput: User){
+    public logout(userInput: User) {
         if (this.authenticate(userInput)) this.removeLoggedUser(userInput.username)
     }
 
@@ -139,7 +139,7 @@ async function createUsersDB(quant: number) {
     let str = JSON.stringify(users)
 
     try {
-        await fs.writeFile("./usersdb.json", str)
+        await fs.writeFile("./src/usersdb.json", str)
         console.log("\"usersdb.json\" was created with success.")
     }
     catch (err) {
