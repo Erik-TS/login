@@ -90,10 +90,8 @@ class Server {
     public get registeredUsers(): Array<object> { return this._registeredUsers }
 
     public static get instance(): Server {
-        if (Server._instance === null || Server._instance === undefined) {
-            Server._instance = new Server();
-        }
-        return Server._instance;
+        Server._instance ?? Server._instance = new Server()
+        return Server._instance
     }
 
     private static set instance(server: Server) {
